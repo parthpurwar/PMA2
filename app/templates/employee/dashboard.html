@@ -1,0 +1,25 @@
+{% extends "shared/base.html" %}
+{% set page_title = "My Employee Profile" %}
+{% block content %}
+{% if message == "profile-updated" %}<div class="alert alert-success">Your profile has been updated.</div>{% endif %}
+{% if message == "cv-uploaded" %}<div class="alert alert-success">Your CV has been uploaded.</div>{% endif %}
+{% if error == "invalid-cv" %}<div class="alert alert-danger">Upload a valid PDF no larger than 5 MB.</div>{% endif %}
+{% if not resource %}<div class="alert alert-warning">Your login is not linked to a resource profile yet. Contact PMO.</div>{% else %}
+{% if resource.cv_requested %}<div class="alert alert-warning"><strong>CV requested:</strong> {{ resource.cv_request_message or "Please upload your latest CV." }}</div>{% endif %}
+<section class="grid two">
+  <div class="panel"><div class="profile-heading"><div class="profile-avatar">{{ resource.name[:1] }}</div><div><h2>{{ resource.name }}</h2><p>{{ resource.role }} · {{ resource.skill }} L{{ resource.level }}</p><a href="/employees/{{ resource.id }}">View my public profile</a></div></div>
+    <dl class="profile-facts"><div><dt>Employee ID</dt><dd>{{ resource.employee_id }}</dd></div><div><dt>Email</dt><dd>{{ user.email }}</dd></div><div><dt>Allocation</dt><dd>{{ resource.current_allocation }}%</dd></div><div><dt>Status</dt><dd>{{ resource.current_status }}</dd></div></dl>
+  </div>
+  <div class="panel"><h2>My CV</h2>{% if resource.cv_path %}<p><a class="btn btn-outline-secondary" href="{{ resource.cv_path }}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> View current CV</a></p>{% else %}<p class="muted">No CV has been uploaded yet.</p>{% endif %}<form method="post" action="/employee/cv" enctype="multipart/form-data"><input class="form-control" type="file" name="cv_file" accept="application/pdf,.pdf" required><button class="btn btn-primary mt-3">Upload PDF CV</button></form></div>
+</section>
+<section class="panel"><div class="panel-head"><div><h2>Edit personal and professional details</h2><p>This information is visible to PMO and Project Leads.</p></div></div>
+  <form class="form-grid" method="post" action="/employee/profile">
+    <label>Phone<input class="form-control" name="phone" value="{{ resource.phone or '' }}"></label><label>Location<input class="form-control" name="location" value="{{ resource.location }}" required></label>
+    <label>Years of experience<input class="form-control" type="number" min="0" name="years_experience" value="{{ resource.years_experience }}"></label><label>Current status<select class="form-select" name="current_status"><option {% if resource.current_status == 'Available' %}selected{% endif %}>Available</option><option {% if resource.current_status == 'Allocated' %}selected{% endif %}>Allocated</option><option {% if resource.current_status == 'On Leave' %}selected{% endif %}>On Leave</option><option {% if resource.current_status == 'Unavailable' %}selected{% endif %}>Unavailable</option></select></label>
+    <label class="span-2">Additional skills<input class="form-control" name="additional_skills" value="{{ resource.additional_skills or '' }}" placeholder="FastAPI, React, AWS, stakeholder management"></label>
+    <label class="span-2">Education<textarea class="form-control" name="education" rows="2">{{ resource.education or '' }}</textarea></label><label class="span-2">Certifications<textarea class="form-control" name="certifications" rows="2">{{ resource.certifications or '' }}</textarea></label>
+    <label class="span-2">Professional summary<textarea class="form-control" name="bio" rows="4">{{ resource.bio or '' }}</textarea></label><div class="span-2 actions"><button class="btn btn-primary">Save profile</button></div>
+  </form>
+</section>
+{% endif %}
+{% endblock %}

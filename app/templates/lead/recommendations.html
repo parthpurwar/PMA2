@@ -1,0 +1,33 @@
+{% extends "shared/base.html" %}
+{% import "shared/macros.html" as ui %}
+{% set page_title = "Resource Recommendations" %}
+{% block content %}
+<section class="panel">
+  <div class="panel-head">
+    <div><h2>{{ demand.project.name }}</h2><p>{{ demand.required_role }} · {{ demand.required_skill }} L{{ demand.required_level }} · {{ demand.allocation_percent }}% allocation · {{ demand.priority }} priority</p></div>
+    {{ ui.badge(demand.status) }}
+  </div>
+  <form method="post" action="/lead/demands/{{ demand.id }}/submit" data-confirm="Submit selected resources for PMO approval?">
+    <div class="table-responsive">
+      <table class="table data-table sortable">
+        <thead><tr><th>Select</th><th>Rank</th><th>Employee</th><th>Role</th><th>Skill</th><th>Current Allocation</th><th>Available Date</th><th>Recommendation Reason</th></tr></thead>
+        <tbody>
+        {% for rec in demand.recommendations %}
+        <tr>
+          <td><input class="form-check-input" type="checkbox" name="resource_ids" value="{{ rec.resource_id }}" {% if loop.index <= demand.number_of_resources %}checked{% endif %}></td>
+          <td>#{{ rec.rank }}</td>
+          <td><strong><a class="employee-link" href="/employees/{{ rec.resource.id }}">{{ rec.resource.name }}</a></strong><br><span class="muted">{{ rec.resource.employee_id }}</span></td>
+          <td>{{ rec.resource.role }}</td>
+          <td>{{ rec.resource.skill }} L{{ rec.resource.level }}</td>
+          <td>{{ ui.capacity(rec.resource) }}</td>
+          <td>{{ rec.resource.available_from }}</td>
+          <td>{{ rec.reason }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="actions"><button class="btn btn-primary"><i class="bi bi-send"></i> Submit for PMO Approval</button></div>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "shared/base.html" %}
+{% import "shared/macros.html" as ui %}
+{% set page_title = "Find Resources" %}
+{% block content %}
+{% if message == "block-requested" %}<div class="alert alert-success">Block request sent to PMO for approval.</div>{% endif %}
+{% if message == "cv-requested" %}<div class="alert alert-success">CV upload reminder sent to the employee.</div>{% endif %}
+{% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+<section class="panel">
+  <form class="resource-filters" method="get">
+    <input class="form-control" name="search" value="{{ search }}" placeholder="Search name, employee ID, role, or skill">
+    <select class="form-select" name="skill"><option value="">All skills</option>{% for s in skills %}<option value="{{ s }}" {% if skill == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+    <select class="form-select" name="allocation_max"><option value="">Any allocation</option>{% for value, label in [(0,"Fully available (0%)"),(25,"Up to 25% allocated"),(50,"Up to 50% allocated"),(75,"Up to 75% allocated")] %}<option value="{{ value }}" {% if allocation_max == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+    <input class="form-control" type="date" name="availability_start" value="{{ availability_start or '' }}" title="Available from">
+    <input class="form-control" type="date" name="availability_end" value="{{ availability_end or '' }}" title="Available to">
+    <button class="btn btn-outline-primary"><i class="bi bi-search"></i> Search</button>
+    <a class="btn btn-outline-secondary" href="/lead/resources">Clear</a>
+  </form>
+  <div class="table-responsive">
+    <table class="table data-table">
+      <thead><tr><th>Employee</th><th>Role</th><th>Skill</th><th>Allocation</th><th>CV</th><th>Action</th></tr></thead>
+      <tbody>{% for r in resources %}<tr>
+        <td><strong><a class="employee-link" href="/employees/{{ r.id }}">{{ r.name }}</a></strong><br><span class="muted">{{ r.employee_id }} · {{ r.location }}</span></td>
+        <td>{{ r.role }}</td><td>{{ r.skill }} L{{ r.level }}</td><td>{{ ui.capacity(r) }}</td>
+        <td>{% if r.cv_path %}<a class="btn btn-sm btn-outline-secondary" href="{{ r.cv_path }}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> View</a>{% else %}<span class="muted">Not uploaded</span><form method="post" action="/lead/resources/{{ r.id }}/request-cv"><button class="btn btn-sm btn-outline-warning mt-1">Request CV</button></form>{% endif %}</td>
+        <td><button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#block-{{ r.id }}"><i class="bi bi-calendar-plus"></i> Block</button></td>
+      </tr>{% else %}<tr><td colspan="6" class="empty">No resources found.</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+</section>
+{% for r in resources %}
+<div class="modal fade" id="block-{{ r.id }}" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content">
+  <form method="post" action="/lead/resources/{{ r.id }}/block">
+    <div class="modal-header"><h2 class="modal-title fs-5">Block {{ r.name }}</h2><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body form-grid one-column">
+      <div class="booking-calendar-wrap">
+        <div class="calendar-legend"><span><i class="cal-dot free"></i> Free</span><span><i class="cal-dot blocked"></i> Unavailable</span></div>
+        <div class="booking-months">{% for month in calendars[r.id] %}<div class="booking-month"><strong>{{ month.label }}</strong><div class="weekday-row">{% for label in ["M","T","W","T","F","S","S"] %}<span>{{ label }}</span>{% endfor %}</div>{% for week in month.weeks %}<div class="calendar-week">{% for cell in week %}<span class="booking-day {% if not cell.in_month %}outside{% elif cell.past %}past{% elif cell.unavailable %}blocked{% else %}free{% endif %}" title="{{ cell.date.strftime('%d %b %Y') }}{% if cell.unavailable %} — unavailable{% else %} — free{% endif %}">{{ cell.day }}</span>{% endfor %}</div>{% endfor %}</div>{% endfor %}</div>
+      </div>
+      <div class="date-range-grid"><label>From<input class="form-control" type="date" name="start_date" min="{{ today }}" required></label><label>To<input class="form-control" type="date" name="end_date" min="{{ today }}" required></label></div>
+      <label>Future project<select class="form-select" name="project_id"><option value="">Not assigned yet</option>{% for project in projects %}<option value="{{ project.id }}">{{ project.name }}</option>{% endfor %}</select></label>
+      <label>Reason<textarea class="form-control" name="reason" rows="3" placeholder="Why do you need this resource?"></textarea></label>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary">Send to PMO</button></div>
+  </form>
+</div></div></div>
+{% endfor %}
+{% endblock %}

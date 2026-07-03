@@ -1,0 +1,15 @@
+{% extends "shared/base.html" %}
+{% import "shared/macros.html" as ui %}
+{% set page_title = "Resource Block Requests" %}
+{% block content %}
+{% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+<section class="panel">
+  <form class="toolbar compact" method="get"><select class="form-select" name="status"><option value="">All statuses</option>{% for s in ["PENDING","APPROVED","REJECTED"] %}<option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select><button class="btn btn-outline-primary">Filter</button></form>
+  {% for block in blocks %}<article class="request-row"><div class="request-main">
+    <h2><a class="employee-link" href="/employees/{{ block.resource.id }}">{{ block.resource.name }}</a> <span>{{ ui.badge(block.status) }}</span></h2>
+    <p><strong>{{ block.start_date }}</strong> to <strong>{{ block.end_date }}</strong> · {{ block.resource.role }} · {{ block.resource.skill }} L{{ block.resource.level }}</p>
+    <p class="muted">Requested by {{ block.requested_by.full_name }} for {{ block.project.name if block.project else "an unassigned future project" }}.</p><p>{{ block.reason or "No reason provided." }}</p>
+    {% if block.resource.cv_path %}<a href="{{ block.resource.cv_path }}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> View CV</a>{% endif %}
+  </div>{% if block.status.value == "PENDING" %}<div class="request-actions"><form method="post" action="/pmo/block-requests/{{ block.id }}/approve" data-confirm="Approve this block period?"><input class="form-control form-control-sm" name="remarks" placeholder="Approval remarks"><button class="btn btn-sm btn-success"><i class="bi bi-check2-circle"></i> Approve block</button></form><form method="post" action="/pmo/block-requests/{{ block.id }}/reject"><input class="form-control form-control-sm" name="remarks" placeholder="Rejection reason"><button class="btn btn-sm btn-danger"><i class="bi bi-x-circle"></i> Reject</button></form></div>{% endif %}</article>{% else %}<div class="empty">No block requests found.</div>{% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "shared/base.html" %}
+{% import "shared/macros.html" as ui %}
+{% set page_title = "Reports" %}
+{% block content %}
+<section class="grid cards">
+  <div class="metric"><span>Bench Resources</span><strong>{{ metrics.bench }}</strong></div>
+  <div class="metric"><span>Approved Requests</span><strong>{{ metrics.approved }}</strong></div>
+  <div class="metric"><span>Pending Requests</span><strong>{{ metrics.pending }}</strong></div>
+  <div class="metric"><span>Skill Groups</span><strong>{{ skills|length }}</strong></div>
+</section>
+<section class="grid two">
+  <div class="panel"><h2>Resource Utilization</h2><canvas id="utilChart" data-labels='{{ utilization|map(attribute="name")|list|tojson }}' data-values='{{ utilization|map(attribute="allocation")|list|tojson }}'></canvas></div>
+  <div class="panel"><h2>Skill-wise Availability</h2><canvas id="skillChart" data-labels='{{ skills|map(attribute="skill")|list|tojson }}' data-values='{{ skills|map(attribute="capacity")|list|tojson }}'></canvas></div>
+</section>
+<section class="panel">
+  <h2>Demand History</h2>
+  <table class="table data-table sortable"><thead><tr><th>ID</th><th>Project</th><th>Role</th><th>Skill</th><th>Status</th><th>Created</th></tr></thead><tbody>
+  {% for d in demands %}
+  <tr><td>#{{ d.id }}</td><td>{{ d.project.name }}</td><td>{{ d.required_role }}</td><td>{{ d.required_skill }} L{{ d.required_level }}</td><td>{{ ui.badge(d.status) }}</td><td>{{ d.created_at.strftime("%d %b %Y") }}</td></tr>
+  {% endfor %}
+  </tbody></table>
+</section>
+{% endblock %}

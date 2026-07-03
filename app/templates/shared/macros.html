@@ -1,0 +1,17 @@
+{% macro badge(status) -%}
+  {% set value = status.value if status.value else status %}
+  <span class="status status-{{ value|lower }}">{{ value.replace("_", " ") }}</span>
+{%- endmacro %}
+
+{% macro capacity(resource) -%}
+  {% set available = 100 - resource.current_allocation - resource.reserved_allocation %}
+  <div class="capacity">
+    <div class="capacity-bar" style="width: {{ resource.current_allocation }}%"></div>
+    <span>{{ resource.current_allocation }}% allocated{% if resource.reserved_allocation %}, {{ resource.reserved_allocation }}% reserved{% endif %}</span>
+  </div>
+{%- endmacro %}
+
+{% macro extension_badge(status) -%}
+  {% set value = status.value if status.value else status %}
+  <span class="status extension-{{ value|lower }}">{{ value.replace("_", " ") }}</span>
+{%- endmacro %}

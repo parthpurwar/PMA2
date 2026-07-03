@@ -1,0 +1,27 @@
+<aside class="sidebar">
+  <div class="brand">
+    <span class="brand-mark">PM</span>
+    <span>PMO Resource</span>
+  </div>
+  {% if user.role.value == "PMO" %}
+  <nav>
+    <a href="/pmo/dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="/pmo/resources"><i class="bi bi-people"></i> Resources</a>
+    <a href="/pmo/projects"><i class="bi bi-kanban"></i> Projects</a>
+    <a href="/pmo/requests?status=PENDING"><i class="bi bi-inboxes"></i> Pending Requests</a>
+    <a href="/pmo/block-requests?status=PENDING"><i class="bi bi-calendar2-x"></i> Block Requests</a>
+    <a href="/pmo/reports"><i class="bi bi-bar-chart"></i> Reports</a>
+    <a href="/pmo/audit-logs"><i class="bi bi-shield-check"></i> Audit Logs</a>
+  </nav>
+  {% elif user.role.value == "PROJECT_LEAD" %}
+  <nav>
+    <a href="/lead/dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="/lead/raise-demand"><i class="bi bi-plus-square"></i> Raise Demand</a>
+    <a href="/lead/resources"><i class="bi bi-search"></i> Find Resources</a>
+    <a href="/lead/my-resources"><i class="bi bi-person-workspace"></i> My Resources</a>
+    <a href="/lead/requests"><i class="bi bi-clock-history"></i> Request Status</a>
+  </nav>
+  {% else %}
+  <nav><a href="/employee/dashboard"><i class="bi bi-person-badge"></i> My Profile</a></nav>
+  {% endif %}
+</aside>

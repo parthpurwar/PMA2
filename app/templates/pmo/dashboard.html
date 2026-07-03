@@ -1,0 +1,38 @@
+{% extends "shared/base.html" %}
+{% import "shared/macros.html" as ui %}
+{% set page_title = "PMO Dashboard" %}
+{% block content %}
+<section class="grid cards">
+  <div class="metric"><span>Resources</span><strong>{{ metrics.resources }}</strong></div>
+  <div class="metric"><span>Available</span><strong>{{ metrics.available }}</strong></div>
+  <div class="metric"><span>Active Projects</span><strong>{{ metrics.projects }}</strong></div>
+  <div class="metric"><span>Pending Requests</span><strong>{{ metrics.pending }}</strong></div>
+</section>
+<section class="panel">
+  <div class="panel-head">
+    <div>
+      <h2>Database Synchronization</h2>
+      <p>Temporary database is refreshed from production before Project Leads work on allocations.</p>
+    </div>
+    <form method="post" action="/pmo/sync" data-confirm="Refresh the temporary database from production? Draft temporary changes will be replaced.">
+      <button class="btn btn-primary"><i class="bi bi-arrow-repeat"></i> Synchronize Database</button>
+    </form>
+  </div>
+  <div class="muted">Last sync: {{ latest_sync.synced_at.strftime("%d %b %Y %H:%M") if latest_sync else "Not synchronized yet" }}</div>
+</section>
+<section class="panel">
+  <div class="panel-head"><h2>Pending Approval Requests</h2><a href="/pmo/requests?status=PENDING" class="btn btn-sm btn-outline-primary">Open queue</a></div>
+  <div class="table-responsive">
+    <table class="table data-table">
+      <thead><tr><th>Project</th><th>Requested By</th><th>Role</th><th>Skill</th><th>Allocation</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for demand in pending %}
+        <tr><td>{{ demand.project.name }}</td><td>{{ demand.requested_by.full_name }}</td><td>{{ demand.required_role }}</td><td>{{ demand.required_skill }} L{{ demand.required_level }}</td><td>{{ demand.allocation_percent }}%</td><td>{{ ui.badge(demand.status) }}</td></tr>
+      {% else %}
+        <tr><td colspan="5" class="empty">No pending requests.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

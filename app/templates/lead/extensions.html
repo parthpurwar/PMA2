@@ -1,0 +1,43 @@
+{% extends "shared/base.html" %}
+{% import "shared/macros.html" as ui %}
+{% set page_title = "Extension Updates" %}
+{% block content %}
+{% if message == "updated" %}<div class="alert alert-success">Extension status updated.</div>{% endif %}
+<section class="panel">
+  <div class="panel-head">
+    <div>
+      <h2>Project End Date Review</h2>
+      <p>For projects ending within 30 days, update each employee allocation as extension required or not required.</p>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table data-table sortable">
+      <thead><tr><th>Employee</th><th>Project</th><th>Allocation</th><th>Project End</th><th>Current Status</th><th>Update</th></tr></thead>
+      <tbody>
+      {% for allocation in allocations %}
+      <tr>
+        <td><strong>{{ allocation.resource.name }}</strong><br><span class="muted">{{ allocation.resource.employee_id }}</span></td>
+        <td>{{ allocation.project.name }}</td>
+        <td>{{ allocation.allocation_percent }}%</td>
+        <td>{{ allocation.project.end_date }}</td>
+        <td>{{ ui.extension_badge(allocation.extension_status) }}{% if allocation.extension_remarks %}<br><span class="muted">{{ allocation.extension_remarks }}</span>{% endif %}</td>
+        <td>
+          <form class="extension-form" method="post" action="/lead/extensions/{{ allocation.id }}">
+            <select class="form-select form-select-sm" name="extension_status">
+              <option value="YET_TO_BE_UPDATED" {% if allocation.extension_status.value == "YET_TO_BE_UPDATED" %}selected{% endif %}>Yet to be updated</option>
+              <option value="EXTENSION_REQUIRED" {% if allocation.extension_status.value == "EXTENSION_REQUIRED" %}selected{% endif %}>Extension required</option>
+              <option value="NO_EXTENSION_REQUIRED" {% if allocation.extension_status.value == "NO_EXTENSION_REQUIRED" %}selected{% endif %}>No extension required</option>
+            </select>
+            <input class="form-control form-control-sm" name="extension_remarks" value="{{ allocation.extension_remarks or '' }}" placeholder="Remarks">
+            <button class="btn btn-sm btn-primary">Save</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="empty">No employee extension updates are due.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

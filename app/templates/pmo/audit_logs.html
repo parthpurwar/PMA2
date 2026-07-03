@@ -1,0 +1,18 @@
+{% extends "shared/base.html" %}
+{% set page_title = "Audit Logs" %}
+{% block content %}
+<section class="panel">
+  <div class="table-responsive">
+    <table class="table data-table sortable">
+      <thead><tr><th>Timestamp</th><th>PMO</th><th>Lead</th><th>Demand</th><th>Old Allocation</th><th>New Allocation</th><th>Resources</th><th>Remarks</th></tr></thead>
+      <tbody>
+      {% for log in logs %}
+      <tr><td>{{ log.timestamp.strftime("%d %b %Y %H:%M") }}</td><td>{{ log.pmo_username }}</td><td>{{ log.project_lead_username }}</td><td>#{{ log.demand_id }}</td><td>{{ log.old_allocation }}</td><td>{{ log.new_allocation }}</td><td>{{ log.resources_updated }}</td><td>{{ log.remarks or "" }}</td></tr>
+      {% else %}
+      <tr><td colspan="8" class="empty">No production approval audit entries yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

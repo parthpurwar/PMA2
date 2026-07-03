@@ -1,0 +1,26 @@
+{% extends "shared/base.html" %}
+{% block auth_content %}
+<main class="login-page">
+  <section class="login-panel">
+    <div class="login-copy">
+      <span class="brand-mark big">PM</span>
+      <h1>PMO Resource Management</h1>
+      <p>Coordinate demand, recommendations, reservations, approvals, and production updates with a controlled PMO workflow.</p>
+      <div class="demo-users">
+        <span>Demo PMO: <strong>pmo / pmo123</strong></span>
+        <span>Demo Lead: <strong>lead1 / lead123</strong></span>
+        <span>Demo Employee: <strong>employee1 / employee123</strong></span>
+      </div>
+    </div>
+    <form class="login-card" method="post" action="/login">
+      <h2>Sign in</h2>
+      {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+      <label class="form-label">Username</label>
+      <input class="form-control" name="username" required autofocus>
+      <label class="form-label mt-3">Password</label>
+      <input class="form-control" name="password" type="password" required>
+      <button class="btn btn-primary w-100 mt-4">Login</button>
+    </form>
+  </section>
+</main>
+{% endblock %}

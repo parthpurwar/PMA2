@@ -1,0 +1,32 @@
+{% extends "shared/base.html" %}
+{% import "shared/macros.html" as ui %}
+{% set page_title = "My Resources" %}
+{% block content %}
+{% if message == "updated" %}<div class="alert alert-success">Extension status updated.</div>{% endif %}
+<section class="panel">
+  <div class="panel-head"><div><h2>Currently working with me</h2><p>Active allocations across your projects.</p></div></div>
+  <div class="table-responsive"><table class="table data-table"><thead><tr><th>Employee</th><th>Project</th><th>Allocation</th><th>End date</th><th>CV</th><th>Extension</th></tr></thead><tbody>
+  {% for allocation in allocations %}
+  {% set days_left = (allocation.end_date - today).days %}
+  <tr class="{% if days_left <= 30 %}extension-due-row{% endif %}">
+    <td><strong><a class="employee-link" href="/employees/{{ allocation.resource.id }}">{{ allocation.resource.name }}</a></strong><br><span class="muted">{{ allocation.resource.employee_id }} · {{ allocation.resource.role }} · {{ allocation.resource.skill }}</span></td>
+    <td>{{ allocation.project.name }}</td><td>{{ allocation.allocation_percent }}%</td>
+    <td>{{ allocation.end_date }}{% if days_left <= 30 %}<span class="due-marker" title="Extension decision due"><i class="bi bi-bookmark-fill"></i> {{ days_left }} days left</span>{% endif %}</td>
+    <td>{% if allocation.resource.cv_path %}<a href="{{ allocation.resource.cv_path }}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="bi bi-file-earmark-pdf"></i> CV</a>{% else %}<span class="muted">Not uploaded</span>{% endif %}</td>
+    <td><form class="extension-form" method="post" action="/lead/my-resources/{{ allocation.id }}/extension">
+      <select class="form-select form-select-sm" name="extension_status">
+        <option value="YET_TO_BE_UPDATED" {% if allocation.extension_status.value == "YET_TO_BE_UPDATED" %}selected{% endif %}>Decision pending</option>
+        <option value="EXTENSION_REQUIRED" {% if allocation.extension_status.value == "EXTENSION_REQUIRED" %}selected{% endif %}>Extension required</option>
+        <option value="NO_EXTENSION_REQUIRED" {% if allocation.extension_status.value == "NO_EXTENSION_REQUIRED" %}selected{% endif %}>No extension</option>
+      </select><input class="form-control form-control-sm" name="extension_remarks" value="{{ allocation.extension_remarks or '' }}" placeholder="Remarks"><button class="btn btn-sm btn-primary">Save</button>
+    </form></td>
+  </tr>{% else %}<tr><td colspan="6" class="empty">No active resources are assigned to your projects.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+<section class="panel">
+  <div class="panel-head"><div><h2>Blocked resources</h2><p>Your future resource block requests and their PMO status.</p></div><a class="btn btn-sm btn-primary" href="/lead/resources">Block another resource</a></div>
+  <div class="table-responsive"><table class="table data-table"><thead><tr><th>Employee</th><th>Period</th><th>Project</th><th>Status</th><th>Reason / PMO remarks</th><th>CV</th></tr></thead><tbody>
+  {% for block in blocks %}<tr><td><strong>{{ block.resource.name }}</strong><br><span class="muted">{{ block.resource.employee_id }}</span></td><td>{{ block.start_date }} to {{ block.end_date }}</td><td>{{ block.project.name if block.project else "Future project" }}</td><td>{{ ui.badge(block.status) }}</td><td>{{ block.reason or "—" }}{% if block.pmo_remarks %}<br><span class="muted">PMO: {{ block.pmo_remarks }}</span>{% endif %}</td><td>{% if block.resource.cv_path %}<a href="{{ block.resource.cv_path }}" target="_blank">View CV</a>{% else %}—{% endif %}</td></tr>{% else %}<tr><td colspan="6" class="empty">You have not requested any resource blocks.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "shared/base.html" %}
+{% set page_title = "Raise Demand" %}
+{% block content %}
+<section class="panel narrow">
+  {% for error in errors %}<div class="alert alert-danger">{{ error }}</div>{% endfor %}
+  <form method="post" action="/lead/raise-demand" class="form-grid">
+    <label>Project
+      <select class="form-select" name="project_id" required>
+        {% for p in projects %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Required Skill<input class="form-control" name="required_skill" placeholder="Python, React, Data Engineering" required></label>
+    <label>Required Role<input class="form-control" name="required_role" placeholder="Backend Developer, QA Engineer, Business Analyst" required></label>
+    <label>Required Level<input class="form-control" type="number" name="required_level" min="1" max="5" value="3" required></label>
+    <label>Number of Resources<input class="form-control" type="number" name="number_of_resources" min="1" max="20" value="1" required></label>
+    <label>Allocation %<input class="form-control" type="number" name="allocation_percent" min="1" max="100" value="50" required></label>
+    <label>Priority
+      <select class="form-select" name="priority">
+        <option>High</option><option selected>Medium</option><option>Low</option><option>Critical</option>
+      </select>
+    </label>
+    <label>Start Date<input class="form-control" type="date" name="start_date" value="{{ today }}" required></label>
+    <label>End Date<input class="form-control" type="date" name="end_date" required></label>
+    <label class="span-2">Remarks<textarea class="form-control" name="remarks" rows="4"></textarea></label>
+    <div class="span-2 actions"><button class="btn btn-primary"><i class="bi bi-search"></i> Submit and Match Resources</button></div>
+  </form>
+</section>
+{% endblock %}

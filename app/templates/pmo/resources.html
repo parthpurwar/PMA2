@@ -1,0 +1,73 @@
+{% extends "shared/base.html" %}
+{% import "shared/macros.html" as ui %}
+{% set page_title = "All Resources" %}
+{% block content %}
+{% if message == "resource-added" %}<div class="alert alert-success">Resource added to production and temporary databases.</div>{% endif %}
+{% if message == "resource-removed" %}<div class="alert alert-success">Resource removed from active resource lists.</div>{% endif %}
+{% if message == "cv-updated" %}<div class="alert alert-success">Resource CV updated.</div>{% endif %}
+{% if message == "cv-requested" %}<div class="alert alert-success">CV upload reminder sent to the employee.</div>{% endif %}
+{% if error == "employee-exists" %}<div class="alert alert-danger">Employee ID already exists.</div>{% endif %}
+{% if error == "login-exists" %}<div class="alert alert-danger">Employee username or email already exists.</div>{% endif %}
+{% if error == "resource-allocated" %}<div class="alert alert-danger">Allocated or reserved resources cannot be removed. Reduce allocation first.</div>{% endif %}
+{% if error == "resource-not-found" %}<div class="alert alert-danger">Resource was not found.</div>{% endif %}
+{% if error == "invalid-cv" %}<div class="alert alert-danger">Upload a valid PDF CV no larger than 5 MB.</div>{% endif %}
+<section class="panel">
+  <div class="panel-head">
+    <div>
+      <h2>Add Resource</h2>
+      <p>Create a PMO-managed resource in production and the temporary working database.</p>
+    </div>
+  </div>
+  <form class="form-grid" method="post" action="/pmo/resources/add" enctype="multipart/form-data">
+    <label>Employee ID<input class="form-control" name="employee_id" placeholder="E1011" required></label>
+    <label>Employee Name<input class="form-control" name="name" placeholder="Employee name" required></label>
+    <label>Skill<input class="form-control" name="skill" placeholder="Python, React, QA Automation" required></label>
+    <label>Role<input class="form-control" name="role" placeholder="Backend Developer, QA Engineer" required></label>
+    <label>Level<input class="form-control" type="number" name="level" min="1" max="5" value="3" required></label>
+    <label>Location<input class="form-control" name="location" placeholder="Bengaluru" required></label>
+    <label>Current Allocation %<input class="form-control" type="number" name="current_allocation" min="0" max="100" value="0" required></label>
+    <label>Available From<input class="form-control" type="date" name="available_from" required></label>
+    <label>CV (PDF, optional)<input class="form-control" type="file" name="cv_file" accept="application/pdf,.pdf"></label>
+    <label>Employee login username<input class="form-control" name="employee_username" placeholder="employee11" required></label>
+    <label>Employee email<input class="form-control" type="email" name="employee_email" required></label>
+    <label>Temporary password<input class="form-control" type="password" name="employee_password" minlength="8" required></label>
+    <div class="actions"><button class="btn btn-primary"><i class="bi bi-person-plus"></i> Add Resource</button></div>
+  </form>
+</section>
+<section class="panel">
+  <form class="toolbar" method="get">
+    <input class="form-control" name="search" value="{{ search }}" placeholder="Search name, employee ID, role, or skill">
+    <button class="btn btn-outline-primary"><i class="bi bi-search"></i> Search</button>
+  </form>
+  <div class="table-responsive">
+    <table class="table data-table sortable">
+      <thead><tr><th>Employee</th><th>Role</th><th>Skill</th><th>Location</th><th>Allocation</th><th>CV</th><th>Extension Status</th><th>Actions</th></tr></thead>
+      <tbody>
+      {% for r in resources %}
+      <tr>
+        <td><strong><a class="employee-link" href="/employees/{{ r.id }}">{{ r.name }}</a></strong><br><span class="muted">{{ r.employee_id }}</span></td>
+        <td>{{ r.role }}</td><td>{{ r.skill }} L{{ r.level }}</td>
+        <td>{{ r.location }}</td>
+        <td>{{ ui.capacity(r) }}</td>
+        <td>{% if r.cv_path %}<a href="{{ r.cv_path }}" target="_blank" class="btn btn-sm btn-outline-secondary">View PDF</a>{% else %}<form method="post" action="/pmo/resources/{{ r.id }}/request-cv"><button class="btn btn-sm btn-outline-warning">Request from employee</button></form>{% endif %}<form class="cv-upload" method="post" action="/pmo/resources/{{ r.id }}/cv" enctype="multipart/form-data"><input type="file" name="cv_file" accept="application/pdf,.pdf" required><button class="btn btn-sm btn-outline-primary">{{ "Replace" if r.cv_path else "Upload directly" }}</button></form></td>
+        <td>
+          {% for allocation in r.allocations if allocation.status == "Active" and allocation.extension_status.value != "NOT_DUE" %}
+            <div>{{ allocation.project.name }}<br>{{ ui.extension_badge(allocation.extension_status) }}</div>
+          {% else %}
+            <span class="muted">Not due</span>
+          {% endfor %}
+        </td>
+        <td>
+          <form method="post" action="/pmo/resources/{{ r.id }}/remove" data-confirm="Remove this resource from active lists?">
+            <button class="btn btn-sm btn-outline-danger" {% if r.current_allocation > 0 or r.reserved_allocation > 0 %}disabled title="Allocated resources cannot be removed"{% endif %}>
+              <i class="bi bi-trash"></i> Remove
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

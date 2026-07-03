@@ -1,0 +1,21 @@
+{% extends "shared/base.html" %}
+{% import "shared/macros.html" as ui %}
+{% set page_title = "My Request Status" %}
+{% block content %}
+<section class="panel">
+  <table class="table data-table sortable">
+    <thead><tr><th>ID</th><th>Project</th><th>Role</th><th>Skill</th><th>Selected Resources</th><th>Priority</th><th>Status</th><th>Created</th></tr></thead>
+    <tbody>
+    {% for d in demands %}
+    <tr>
+      <td>#{{ d.id }}</td><td>{{ d.project.name }}</td><td>{{ d.required_role }}</td><td>{{ d.required_skill }} L{{ d.required_level }}</td>
+      <td>{% for rec in d.recommendations if rec.is_selected %}<a class="chip selected employee-link" href="/employees/{{ rec.resource.id }}">{{ rec.resource.name }}</a>{% else %}<span class="muted">Not selected</span>{% endfor %}</td>
+      <td>{{ d.priority }}</td><td>{{ ui.badge(d.status) }}</td><td>{{ d.created_at.strftime("%d %b %Y") }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8" class="empty">No request history yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

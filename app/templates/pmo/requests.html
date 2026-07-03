@@ -1,0 +1,49 @@
+{% extends "shared/base.html" %}
+{% import "shared/macros.html" as ui %}
+{% set page_title = "Approval Requests" %}
+{% block content %}
+<section class="panel">
+  <form class="toolbar" method="get">
+    <select class="form-select" name="status">
+      <option value="">All statuses</option>
+      {% for s in ["PENDING","APPROVED","REJECTED","DRAFT"] %}
+      <option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn btn-outline-primary">Filter</button>
+  </form>
+  {% for d in demands %}
+  <article class="request-row">
+    <div class="request-main">
+      <h2>{{ d.project.name }} <span>{{ ui.badge(d.status) }}</span></h2>
+      <p>{{ d.required_role }} · {{ d.required_skill }} L{{ d.required_level }} · {{ d.number_of_resources }} resource(s) · {{ d.allocation_percent }}% · {{ d.start_date }} to {{ d.end_date }}</p>
+      <p class="muted">Requested by {{ d.requested_by.full_name }}. Remarks: {{ d.remarks or "None" }}</p>
+      <div class="chips">
+      {% for rec in d.recommendations %}
+        <a class="chip employee-link {% if rec.is_selected %}selected{% endif %}" href="/employees/{{ rec.resource.id }}">{{ rec.resource.name }} · {{ rec.resource.role }} · {{ rec.resource.skill }} L{{ rec.resource.level }} · {{ rec.reason }}</a>
+      {% endfor %}
+      </div>
+    </div>
+    {% if d.status.value == "PENDING" %}
+    <div class="request-actions">
+      <form method="post" action="/pmo/requests/{{ d.id }}/modify">
+        <input class="form-control form-control-sm" type="number" name="allocation_percent" min="1" max="100" value="{{ d.allocation_percent }}">
+        <input class="form-control form-control-sm" name="remarks" placeholder="Modification remarks">
+        <button class="btn btn-sm btn-outline-secondary">Modify</button>
+      </form>
+      <form method="post" action="/pmo/requests/{{ d.id }}/approve" data-confirm="Approve this request and update production?">
+        <input class="form-control form-control-sm" name="remarks" placeholder="Approval remarks">
+        <button class="btn btn-sm btn-success"><i class="bi bi-check2-circle"></i> Approve</button>
+      </form>
+      <form method="post" action="/pmo/requests/{{ d.id }}/reject" data-confirm="Reject this request and release reservations?">
+        <input class="form-control form-control-sm" name="remarks" placeholder="Rejection remarks">
+        <button class="btn btn-sm btn-danger"><i class="bi bi-x-circle"></i> Reject</button>
+      </form>
+    </div>
+    {% endif %}
+  </article>
+  {% else %}
+  <div class="empty">No requests found.</div>
+  {% endfor %}
+</section>
+{% endblock %}

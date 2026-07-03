@@ -1,0 +1,17 @@
+{% extends "shared/base.html" %}
+{% import "shared/macros.html" as ui %}
+{% set page_title = "Projects" %}
+{% block content %}
+<section class="panel">
+  <div class="table-responsive">
+    <table class="table data-table sortable">
+      <thead><tr><th>Project</th><th>Code</th><th>Lead</th><th>Status</th><th>Timeline</th><th>Allocations</th></tr></thead>
+      <tbody>
+      {% for p in projects %}
+      <tr><td><strong>{{ p.name }}</strong><br><span class="muted">{{ p.description }}</span></td><td>{{ p.code }}</td><td>{{ p.lead.full_name }}</td><td>{{ ui.badge(p.status) }}</td><td>{{ p.start_date }} to {{ p.end_date or "Open" }}</td><td>{{ p.allocations|length }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

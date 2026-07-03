@@ -1,0 +1,41 @@
+{% extends "shared/base.html" %}
+{% import "shared/macros.html" as ui %}
+{% set page_title = "Project Lead Dashboard" %}
+{% block content %}
+<section class="grid cards">
+  <div class="metric"><span>My Projects</span><strong>{{ projects|length }}</strong></div>
+  <div class="metric"><span>My Requests</span><strong>{{ demands|length }}</strong></div>
+  <div class="metric"><span>Available Resources</span><strong>{{ available|length }}</strong></div>
+  <div class="metric"><span>Extension Updates</span><strong>{{ extension_items|length }}</strong></div>
+</section>
+<section class="grid two">
+  <div class="panel">
+    <div class="panel-head"><h2>My Projects</h2><a class="btn btn-sm btn-primary" href="/lead/raise-demand"><i class="bi bi-plus-square"></i> Raise Demand</a></div>
+    <table class="table data-table"><thead><tr><th>Name</th><th>Code</th><th>Status</th></tr></thead><tbody>
+      {% for p in projects %}<tr><td>{{ p.name }}</td><td>{{ p.code }}</td><td>{{ ui.badge(p.status) }}</td></tr>{% endfor %}
+    </tbody></table>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><h2>Available Resources</h2><a class="btn btn-sm btn-outline-primary" href="/lead/resources">Search</a></div>
+    <table class="table data-table"><thead><tr><th>Resource</th><th>Role</th><th>Skill</th><th>Capacity</th></tr></thead><tbody>
+      {% for r in available %}<tr><td><a class="employee-link" href="/employees/{{ r.id }}">{{ r.name }}</a></td><td>{{ r.role }}</td><td>{{ r.skill }} L{{ r.level }}</td><td>{{ 100 - r.current_allocation - r.reserved_allocation }}%</td></tr>{% endfor %}
+    </tbody></table>
+  </div>
+</section>
+<section class="panel">
+  <div class="panel-head"><h2>Extension Updates Due</h2><a class="btn btn-sm btn-outline-primary" href="/lead/my-resources">Update all</a></div>
+  <table class="table data-table"><thead><tr><th>Employee</th><th>Project</th><th>Project End</th><th>Status</th></tr></thead><tbody>
+    {% for allocation in extension_items %}
+    <tr><td>{{ allocation.resource.name }}</td><td>{{ allocation.project.name }}</td><td>{{ allocation.project.end_date }}</td><td>{{ ui.extension_badge(allocation.extension_status) }}</td></tr>
+    {% else %}
+    <tr><td colspan="4" class="empty">No extension updates due.</td></tr>
+    {% endfor %}
+  </tbody></table>
+</section>
+<section class="panel">
+  <div class="panel-head"><h2>Request History</h2><a class="btn btn-sm btn-outline-primary" href="/lead/requests">View all</a></div>
+  <table class="table data-table"><thead><tr><th>Project</th><th>Role</th><th>Skill</th><th>Allocation</th><th>Status</th></tr></thead><tbody>
+    {% for d in demands %}<tr><td>{{ d.project.name }}</td><td>{{ d.required_role }}</td><td>{{ d.required_skill }} L{{ d.required_level }}</td><td>{{ d.allocation_percent }}%</td><td>{{ ui.badge(d.status) }}</td></tr>{% else %}<tr><td colspan="5" class="empty">No requests raised yet.</td></tr>{% endfor %}
+  </tbody></table>
+</section>
+{% endblock %}
